@@ -1,18 +1,31 @@
 {
   "name": "TechnoEdu",
   "short_name": "TechnoEdu",
-  "description": "Apprends l'électricité, l'électronique, l'automatisme et plus encore avec des leçons et des quiz.",
-  "lang": "fr",
+  "description": "Apprends l'électricité, l'électronique, l'automatisme, l'informatique et la mécanique.",
   "start_url": "./index.html",
   "scope": "./",
-  "id": "./index.html",
   "display": "standalone",
-  "background_color": "#FFFFFF",
+  "background_color": "#0F1117",
   "theme_color": "#FF6B00",
-  "categories": ["education"],
+  "lang": "fr",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }

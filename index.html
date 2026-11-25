@@ -762,12 +762,10 @@ body{transition:background .2s,color .2s}
 
 /* Feedback bar : icône animée */
 .feedback-bar.correct-fb::before{
-  content:"✓";position:absolute;left:20px;font-size:28px;font-weight:900;
-  color:var(--green);animation:feedbackPop .35s cubic-bezier(.34,1.56,.64,1) both;
+  content:"";position:absolute;left:20px;width:28px;height:28px;background:var(--green);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E") center/contain no-repeat;animation:feedbackPop .35s cubic-bezier(.34,1.56,.64,1) both;
 }
 .feedback-bar.wrong-fb::before{
-  content:"✗";position:absolute;left:20px;font-size:28px;font-weight:900;
-  color:var(--red);animation:feedbackPop .35s cubic-bezier(.34,1.56,.64,1) both;
+  content:"";position:absolute;left:20px;width:28px;height:28px;background:var(--red);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z'/%3E%3C/svg%3E") center/contain no-repeat;animation:feedbackPop .35s cubic-bezier(.34,1.56,.64,1) both;
 }
 .feedback-left{padding-left:44px}
 @keyframes feedbackPop{from{transform:scale(0) rotate(-15deg)}to{transform:scale(1) rotate(0)}}
@@ -812,6 +810,13 @@ body{transition:background .2s,color .2s}
   padding:14px 16px;
 }
 
+
+/* ── Correctifs mode sombre quiz ── */
+[data-theme="dark"] .choice-btn.selected,[data-theme="dark"] .choice-btn:hover{color:var(--fg)}
+[data-theme="dark"] .correct-fb .feedback-answer{color:var(--fg)}
+[data-theme="dark"] .wrong-fb .feedback-answer{color:var(--fg)}
+.feedback-bar.show{align-items:center}
+@media(max-width:768px){.feedback-bar::before{top:14px}.feedback-left{min-height:34px}}
 </style>
 
 <!-- ═══ SVG SPRITE ═══ -->
@@ -823,6 +828,12 @@ body{transition:background .2s,color .2s}
   <symbol id="ico-user" viewBox="0 0 24 24"><path fill="currentColor" d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></symbol>
   <symbol id="ico-bolt" viewBox="0 0 24 24"><path fill="currentColor" d="M7 2v11h3v9l7-12h-4l4-8z"/></symbol>
   <symbol id="ico-lock" viewBox="0 0 24 24"><path fill="currentColor" d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></symbol>
+  <symbol id="ico-bell" viewBox="0 0 24 24"><path fill="currentColor" d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></symbol>
+  <symbol id="ico-download" viewBox="0 0 24 24"><path fill="currentColor" d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></symbol>
+  <symbol id="ico-refresh" viewBox="0 0 24 24"><path fill="currentColor" d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></symbol>
+  <symbol id="ico-users" viewBox="0 0 24 24"><path fill="currentColor" d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></symbol>
+  <symbol id="ico-arrow-up" viewBox="0 0 24 24"><path fill="currentColor" d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></symbol>
+  <symbol id="ico-arrow-down" viewBox="0 0 24 24"><path fill="currentColor" d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/></symbol>
   <symbol id="ico-x" viewBox="0 0 24 24"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></symbol>
   <symbol id="ico-heart" viewBox="0 0 24 24"><path fill="currentColor" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></symbol>
   <symbol id="ico-flame" viewBox="0 0 24 24"><path fill="currentColor" d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67zM11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z"/></symbol>
@@ -961,6 +972,7 @@ body{transition:background .2s,color .2s}
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
           Réinitialiser
         </button>
+        <button class="nav-item" style="margin:0" onclick="manualInstall()"><svg width="20" height="20" style="color:inherit"><use href="#ico-download"/></svg>Installer l'app</button>
         <button class="nav-item" style="margin:0" onclick="handleLogout()"><svg width="20" height="20" style="color:inherit"><use href="#ico-x"/></svg>Déconnexion</button>
       </div>
     </aside>
@@ -975,7 +987,7 @@ body{transition:background .2s,color .2s}
           <div class="topbar-stats">
             <div class="topbar-stat stat-xp" onclick="showView('profile')" title="Voir mon profil"><svg width="18" height="18"><use href="#ico-bolt"/></svg><span class="sv" id="statXP">0</span><span class="sl">XP</span></div>
             <div class="topbar-stat stat-streak" onclick="showView('profile')" title="Voir mon profil"><svg width="18" height="18"><use href="#ico-flame"/></svg><span class="sv" id="statStreak">0</span></div>
-            <div class="topbar-stat stat-hearts" onclick="showToast('❤️ '+userData.hearts+'/5 cœurs — 1 cœur toutes les 60 min',3000)" title="Mes cœurs"><svg width="18" height="18"><use href="#ico-heart"/></svg><span class="sv" id="statHearts">5</span></div>
+            <div class="topbar-stat stat-hearts" onclick="showToast(userData.hearts+'/5 cœurs — 1 cœur toutes les 60 min',3000)" title="Mes cœurs"><svg width="18" height="18"><use href="#ico-heart"/></svg><span class="sv" id="statHearts">5</span></div>
             <div class="topbar-avatar" onclick="showView('profile')" style="margin-left:auto;cursor:pointer" title="Mon profil" id="topbarAvatar">?</div>
           </div>
           <div class="xp-row">
@@ -992,7 +1004,7 @@ body{transition:background .2s,color .2s}
           <div id="leagueBannerDash"></div>
 
           <!-- QUESTS -->
-          <div class="sec-header"><div class="sec-header-row"><div class="sec-title"><div class="sec-title-ico" style="background:var(--accent-soft)"><svg width="16" height="16" style="color:var(--accent)"><use href="#ico-target"/></svg></div>Quêtes du jour</div><span class="sec-link" onclick="showView('dashboard')">↻ Rafraîchir</span></div><div class="sec-divider" style="background:linear-gradient(90deg,var(--accent),transparent)"></div></div>
+          <div class="sec-header"><div class="sec-header-row"><div class="sec-title"><div class="sec-title-ico" style="background:var(--accent-soft)"><svg width="16" height="16" style="color:var(--accent)"><use href="#ico-target"/></svg></div>Quêtes du jour</div><span class="sec-link" onclick="showView('dashboard')"><svg width="14" height="14" style="color:inherit;vertical-align:-2px"><use href="#ico-refresh"/></svg> Rafraîchir</span></div><div class="sec-divider" style="background:linear-gradient(90deg,var(--accent),transparent)"></div></div>
           <div class="quest-list" id="questList"></div>
 
           <div class="sec-header"><div class="sec-header-row"><div class="sec-title"><div class="sec-title-ico" style="background:var(--accent-soft)"><svg width="16" height="16" style="color:var(--accent)"><use href="#ico-bolt"/></svg></div>Leçon du jour</div></div><div class="sec-divider" style="background:linear-gradient(90deg,var(--accent),transparent)"></div></div>
@@ -1048,7 +1060,7 @@ body{transition:background .2s,color .2s}
               <div class="complete-trophy" id="completeTrophy">
                 <svg width="52" height="52" style="color:#fff"><use href="#ico-trophy"/></svg>
                 <div class="complete-trophy-stars">
-                  <span id="cstar1">★</span><span id="cstar2">✦</span><span id="cstar3">★</span>
+                  <span id="cstar1"><svg width="22" height="22"><use href="#ico-star"/></svg></span><span id="cstar2"><svg width="22" height="22"><use href="#ico-star"/></svg></span><span id="cstar3"><svg width="22" height="22"><use href="#ico-star"/></svg></span>
                 </div>
               </div>
             </div>
@@ -1078,9 +1090,9 @@ body{transition:background .2s,color .2s}
           <button class="lb-tab active" id="lbtab-notes" onclick="switchLbTab('notes')"><svg width="14" height="14" style="color:inherit"><use href="#ico-grad"/></svg>Notes /20</button>
           <button class="lb-tab" id="lbtab-speed" onclick="switchLbTab('speed')"><svg width="14" height="14" style="color:inherit"><use href="#ico-bolt"/></svg>Vitesse</button>
           <button class="lb-tab" id="lbtab-global" onclick="switchLbTab('global')"><svg width="14" height="14" style="color:inherit"><use href="#ico-star"/></svg>Global</button>
-          <button class="lb-tab" id="lbtab-league" onclick="switchLbTab('league')">🏆 Ligue</button>
-          <button class="lb-tab" id="lbtab-friends" onclick="switchLbTab('friends')">👥 Amis</button>
-          <button class="lb-tab" style="margin-left:auto" onclick="renderLeaderboard(true)" title="Rafraîchir le classement">↻ Rafraîchir</button>
+          <button class="lb-tab" id="lbtab-league" onclick="switchLbTab('league')"><svg width="14" height="14" style="color:inherit;vertical-align:-2px"><use href="#ico-trophy"/></svg>Ligue</button>
+          <button class="lb-tab" id="lbtab-friends" onclick="switchLbTab('friends')"><svg width="14" height="14" style="color:inherit;vertical-align:-2px"><use href="#ico-users"/></svg>Amis</button>
+          <button class="lb-tab" style="margin-left:auto" onclick="renderLeaderboard(true)" title="Rafraîchir le classement"><svg width="14" height="14" style="color:inherit;vertical-align:-2px"><use href="#ico-refresh"/></svg> Rafraîchir</button>
         </div>
         <div id="lbContent"></div>
       </div>
@@ -1546,7 +1558,7 @@ function renderDashboard(){
   // Streak notif
   const notifEl=document.getElementById('streakNotif');
   if(streak>=3 && !sessionStorage.getItem('te_streak_notif_shown')){
-    notifEl.innerHTML=`<div class="notif-banner"><span class="notif-icon"><svg width="22" height="22" style="color:var(--accent)"><use href="#ico-flame"/></svg></span><div class="notif-text"><strong>${streak} jours de suite !</strong> Tu es en feu — continue comme ça !</div><button class="notif-close" onclick="this.parentElement.remove();sessionStorage.setItem('te_streak_notif_shown','1')">✕</button></div>`;
+    notifEl.innerHTML=`<div class="notif-banner"><span class="notif-icon"><svg width="22" height="22" style="color:var(--accent)"><use href="#ico-flame"/></svg></span><div class="notif-text"><strong>${streak} jours de suite !</strong> Tu es en feu — continue comme ça !</div><button class="notif-close" onclick="this.parentElement.remove();sessionStorage.setItem('te_streak_notif_shown','1')"><svg width="14" height="14" style="color:inherit;vertical-align:-2px"><use href="#ico-x"/></svg></button></div>`;
     sessionStorage.setItem('te_streak_notif_shown','1');
   } else { notifEl.innerHTML=''; }
 
@@ -1612,7 +1624,7 @@ function renderDashboard(){
     const firstName=(currentUser?.displayName||'Étudiant').split(' ')[0];
     const welcomeHtml=`<div class="welcome-card">
       <div class="welcome-card-top">
-        <div class="welcome-name">Bienvenue, ${firstName} ! 👋</div>
+        <div class="welcome-name">Bienvenue, ${firstName} !</div>
         <div class="welcome-sub">3 étapes pour bien démarrer</div>
       </div>
       <div class="welcome-card-bottom">
@@ -1795,8 +1807,8 @@ function renderDiscModules(){
           const history=(userData.quizHistory||[]).filter(h=>h.key===`${currentDisc}|${mod.id}|${ch.id}`);
           const bestNote=history.length?Math.max(...history.map(h=>h.note||0)):null;
           let badge;
-          if(isDone&&bestNote!==null) badge=`<span class="chap-badge ${noteBadgeClass(bestNote)}">✓ ${bestNote.toFixed(0)}/20</span>`;
-          else if(isDone) badge=`<span class="chap-badge cb-done">✓ Terminé</span>`;
+          if(isDone&&bestNote!==null) badge=`<span class="chap-badge ${noteBadgeClass(bestNote)}"><svg width="12" height="12" style="color:inherit;vertical-align:-2px"><use href="#ico-check"/></svg> ${bestNote.toFixed(0)}/20</span>`;
+          else if(isDone) badge=`<span class="chap-badge cb-done"><svg width="12" height="12" style="color:inherit;vertical-align:-2px"><use href="#ico-check"/></svg> Terminé</span>`;
           else if(avail) badge=`<span class="chap-badge cb-ok">▶ Start</span>`;
           else if(isUnlocked&&!hasLesson) badge=`<span class="chap-badge cb-locked">Bientôt</span>`;
           else badge=`<span class="chap-badge cb-locked"><svg width="12" height="12" style="color:currentColor"><use href="#ico-lock"/></svg></span>`;
@@ -1832,7 +1844,7 @@ function openChapter(discId,modId,chapId){
   document.getElementById('backTopbarTitle').textContent=ch.title;
   // Quest: lesson opened
   const completed=incrementQuest('lesson',1);
-  if(completed.length){saveProgress();completed.forEach(q=>showToast('✓ Quête : '+q.title+' +'+q.xp+' XP',3200))}
+  if(completed.length){saveProgress();completed.forEach(q=>showToast('Quête : '+q.title+' +'+q.xp+' XP',3200))}
   if(ch.lesson) renderLesson(disc,mod,ch);
   else{
     document.getElementById('lessonBody').innerHTML=`<div class="lesson-hero"><div class="lesson-hero-info"><div class="lesson-hero-disc">${disc.name}</div><div class="lesson-hero-title">${ch.title}</div><div class="lesson-hero-mod">Contenu bientôt disponible</div></div></div>`;
@@ -1948,7 +1960,7 @@ function showFeedback(correct,expl){
   const bar=document.createElement('div');
   bar.className=`feedback-bar ${correct?'correct-fb':'wrong-fb'}`;
   bar.id='feedbackBar';
-  bar.innerHTML=`<div><div class="feedback-msg">${correct?'Excellent !':'Pas tout à fait…'}</div><div class="feedback-answer">${expl}</div></div><button class="btn ${correct?'btn-green':'btn-orange'}" onclick="nextQ()">Continuer →</button>`;
+  bar.innerHTML=`<div class="feedback-left"><div class="feedback-msg">${correct?'Excellent !':'Pas tout à fait…'}</div><div class="feedback-answer">${expl}</div></div><button class="btn ${correct?'btn-green':'btn-orange'}" onclick="nextQ()">Continuer →</button>`;
   document.body.appendChild(bar);
   requestAnimationFrame(()=>bar.classList.add('show'));
 }
@@ -2064,7 +2076,7 @@ function finishQuiz(){
   if(doneQ.length){
     document.getElementById('questCompleteMsg').innerHTML=doneQ.map(q=>`
       <div style="background:var(--accent-soft);border:2px solid var(--accent);border-radius:12px;padding:10px 14px;font-size:13px;font-weight:800;color:var(--accent);margin-bottom:8px">
-        ✓ Quête terminée : ${q.title} — +${q.xp} XP !
+        <svg width="14" height="14" style="color:inherit;vertical-align:-2px"><use href="#ico-check"/></svg> Quête terminée : ${q.title} — +${q.xp} XP !
       </div>`).join('');
   } else { document.getElementById('questCompleteMsg').innerHTML=''; }
 
@@ -2112,9 +2124,9 @@ async function renderFriends(el){
   h+='<h3 style="font-size:14px;margin:12px 0 8px">Classement entre amis (XP)</h3><div class="lb-list">'+friends.map((p,i)=>
     `<div class="lb-row ${p.isMe?'me':''}" style="cursor:pointer" onclick="showPlayerCard('${p.id}')"><div class="lb-rank">${i+1}</div>
     <div class="lb-avatar">${escH(initialsFromName(p.name))}</div>
-    <div style="flex:1"><div class="lb-name">${p.isMe?'<strong>Moi ('+escH(p.name)+')</strong>':escH(p.name)}</div><div class="lb-sub">🔥 ${p.streak} jours</div></div>
+    <div style="flex:1"><div class="lb-name">${p.isMe?'<strong>Moi ('+escH(p.name)+')</strong>':escH(p.name)}</div><div class="lb-sub"><svg width="14" height="14" style="color:inherit;vertical-align:-2px"><use href="#ico-flame"/></svg> ${p.streak} jours</div></div>
     <div class="lb-val">${p.xp} XP</div>
-    ${p.fid?`<button class="btn btn-ghost" title="Retirer" onclick="event.stopPropagation();answerFriend('${p.fid}',false)">✕</button>`:''}</div>`).join('')+'</div>';
+    ${p.fid?`<button class="btn btn-ghost" title="Retirer" onclick="event.stopPropagation();answerFriend('${p.fid}',false)"><svg width="14" height="14" style="color:inherit;vertical-align:-2px"><use href="#ico-x"/></svg></button>`:''}</div>`).join('')+'</div>';
   if(friends.length===1) h+='<p class="lb-sub" style="margin-top:10px">Ajoute un ami avec son code pour voir votre classement.</p>';
   el.innerHTML=h;
 }
@@ -2144,7 +2156,7 @@ async function renderLeague(el){
     <div class="lb-rank ${r.rank<=3?['gold','silver','bronze'][r.rank-1]:''}">${r.rank}</div>
     <div class="lb-avatar">${escH(initialsFromName(r.display_name))}</div>
     <div style="flex:1"><div class="lb-name">${r.id===currentUser.uid?'<strong>Moi</strong>':escH(r.display_name||'Joueur')}</div>
-    <div class="lb-sub">${r.rank<=5?'⬆ zone de promotion':(n>=10&&r.rank>n-5?'⬇ zone de relégation':'')}</div></div>
+    <div class="lb-sub">${r.rank<=5?'<svg width="12" height="12" style="color:inherit;vertical-align:-2px"><use href="#ico-arrow-up"/></svg> zone de promotion':(n>=10&&r.rank>n-5?'<svg width="12" height="12" style="color:inherit;vertical-align:-2px"><use href="#ico-arrow-down"/></svg> zone de relégation':'')}</div></div>
     <div class="lb-val">${r.week_xp||0} XP</div></div>`).join('')+'</div>';
 }
 async function showPlayerCard(pid){
@@ -2159,8 +2171,8 @@ async function showPlayerCard(pid){
     m.onclick=e=>{ if(e.target===m) m.remove(); }; document.body.appendChild(m); }
   const isMe=pid===currentUser?.uid;
   m.innerHTML=`<div style="background:var(--surface);border:2px solid var(--border);border-radius:20px;padding:22px;max-width:440px;width:100%;max-height:85vh;overflow:auto">
-    <div style="display:flex;justify-content:space-between;align-items:center"><h3 style="font-size:18px;font-weight:900">${escH(c.name||'Joueur')}${isMe?' (moi)':''}</h3><button class="btn btn-ghost" onclick="this.closest('#playerCardModal').remove()">✕</button></div>
-    <p class="lb-sub" style="margin:6px 0 12px">Ligue ${TIERS[(c.tier||1)-1]} · ${c.xp} XP · 🔥 ${c.streak} jours · ${c.week_xp} XP cette semaine</p>
+    <div style="display:flex;justify-content:space-between;align-items:center"><h3 style="font-size:18px;font-weight:900">${escH(c.name||'Joueur')}${isMe?' (moi)':''}</h3><button class="btn btn-ghost" onclick="this.closest('#playerCardModal').remove()"><svg width="14" height="14" style="color:inherit;vertical-align:-2px"><use href="#ico-x"/></svg></button></div>
+    <p class="lb-sub" style="margin:6px 0 12px">Ligue ${TIERS[(c.tier||1)-1]} · ${c.xp} XP · <svg width="14" height="14" style="color:inherit;vertical-align:-2px"><use href="#ico-flame"/></svg> ${c.streak} jours · ${c.week_xp} XP cette semaine</p>
     <p style="font-weight:800;margin-bottom:8px">Leçons récentes — moyenne ${avg}/20</p>
     ${qs.length?qs.map(q=>`<div class="lb-row"><div style="flex:1"><div class="lb-name">${escH((q.key||'').split('|').pop())}</div><div class="lb-sub">${escH(q.disc||'')} · ${fmt(q.date)}</div></div><div class="lb-val">${q.note}/20</div></div>`).join(''):'<p class="lb-sub">Aucune leçon terminée.</p>'}</div>`;
 }
@@ -2608,7 +2620,7 @@ function applyDiscTheme(colorName) {
   const root = document.documentElement;
   root.style.setProperty('--disc-accent', theme.accent);
   root.style.setProperty('--disc-accent-dark', theme.dark);
-  root.style.setProperty('--disc-accent-soft', theme.soft);
+  root.style.setProperty('--disc-accent-soft', `color-mix(in srgb, ${theme.accent} 18%, var(--surface))`);
   // Apply themed class to main-content
   document.querySelector('.main-content')?.classList.add('disc-themed');
 }
@@ -2734,11 +2746,11 @@ function getNotifStatus() {
   return Notification.permission; // 'default' | 'granted' | 'denied'
 }
 async function requestNotifPermission() {
-  if (!notifSupported()) { showToast('⚠️ Notifications non supportées'); return; }
+  if (!notifSupported()) { showToast('Notifications non supportées'); return; }
   const perm = await Notification.requestPermission();
   if (perm === 'granted') {
     scheduleLocalNotif();
-    showToast('🔔 Notifications activées !', 2500);
+    showToast('Notifications activées !', 2500);
     // Hide the banner
     document.getElementById('notifPermBanner')?.remove();
     // Store preference
@@ -2760,9 +2772,9 @@ function scheduleLocalNotif() {
   // We only do it if page stays open (best-effort)
   setTimeout(() => {
     try {
-      new Notification('TechnoEdu 📚', {
+      new Notification('TechnoEdu', {
         body: 'C\'est l\'heure de réviser ! Maintiens ton streak aujourd\'hui.',
-        icon: 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#FF6B00"/><text y="44" x="32" text-anchor="middle" font-size="36" fill="white">⚡</text></svg>`),
+        icon: 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#FF6B00"/><path d="M36 8L16 36h14l-4 20 22-30H34z" fill="#fff"/></svg>`),
         badge: 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#FF6B00"/></svg>`),
         tag: 'technoedu-daily',
         requireInteraction: false,
@@ -2787,10 +2799,10 @@ function renderNotifBanner() {
   banner.id = bannerId;
   banner.className = 'notif-perm-banner';
   banner.innerHTML = `
-    <span style="font-size:22px">🔔</span>
+    <svg width="24" height="24" style="color:var(--accent);flex-shrink:0"><use href="#ico-bell"/></svg>
     <div class="notif-text"><strong>Rappels quotidiens</strong><br>Active les notifications pour ne jamais oublier de réviser.</div>
     <button class="btn-notif" onclick="requestNotifPermission()">Activer</button>
-    <button onclick="document.getElementById('${bannerId}').remove();sessionStorage.setItem('te_notif_banner_dismissed','1')" style="background:none;border:none;cursor:pointer;color:var(--fg-muted);font-size:18px;padding:4px">✕</button>`;
+    <button onclick="document.getElementById('${bannerId}').remove();sessionStorage.setItem('te_notif_banner_dismissed','1')" style="background:none;border:none;cursor:pointer;color:var(--fg-muted);font-size:18px;padding:4px"><svg width="14" height="14" style="color:inherit;vertical-align:-2px"><use href="#ico-x"/></svg></button>`;
   streakNotif.insertAdjacentElement('afterend', banner);
 }
 
@@ -2830,12 +2842,12 @@ function buildBanner(mode){
     b.innerHTML=`
       <div class="ib-icon" aria-hidden="true"></div>
       <div class="ib-body">
-        <div class="ib-title">📲 Installer TechnoEdu</div>
+        <div class="ib-title">Installer TechnoEdu</div>
         <div class="ib-desc">Touche <strong>Partager</strong>, puis <strong>Sur l'écran d'accueil</strong>.</div>
-        <div class="ib-ios-hint">⬆ Dans Safari — icône partage en bas</div>
+        <div class="ib-ios-hint"><svg width="14" height="14" style="color:inherit;vertical-align:-2px"><use href="#ico-arrow-up"/></svg> Dans Safari — icône partage en bas</div>
       </div>
       <div class="ib-actions">
-        <button class="ib-btn-close" aria-label="Fermer" onclick="dismissInstallBanner()">✕</button>
+        <button class="ib-btn-close" aria-label="Fermer" onclick="dismissInstallBanner()"><svg width="14" height="14" style="color:inherit;vertical-align:-2px"><use href="#ico-x"/></svg></button>
       </div>`;
   }else{
     b.innerHTML=`
@@ -2846,7 +2858,7 @@ function buildBanner(mode){
       </div>
       <div class="ib-actions">
         <button class="ib-btn-install" onclick="installApp()">Installer</button>
-        <button class="ib-btn-close" aria-label="Plus tard" onclick="dismissInstallBanner()">✕</button>
+        <button class="ib-btn-close" aria-label="Plus tard" onclick="dismissInstallBanner()"><svg width="14" height="14" style="color:inherit;vertical-align:-2px"><use href="#ico-x"/></svg></button>
       </div>`;
   }
   return b;
@@ -2854,6 +2866,14 @@ function buildBanner(mode){
 function showInstallBanner(mode){
   if(isStandalone()||installDismissedRecently()||document.getElementById('installBanner')) return;
   document.body.appendChild(buildBanner(mode));
+}
+function manualInstall(){
+  if(isStandalone()){ showToast('L\'app est déjà installée'); return; }
+  if(_deferredInstall){ installApp(); return; }
+  const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  showToast(ios
+    ?'Safari : bouton Partager → « Sur l\'écran d\'accueil »'
+    :'Menu du navigateur (⋮) → « Installer l\'application » ou « Ajouter à l\'écran d\'accueil »',6000);
 }
 async function installApp(){
   if(!_deferredInstall) return;
@@ -2864,20 +2884,30 @@ async function installApp(){
 }
 window.addEventListener('beforeinstallprompt',e=>{
   e.preventDefault();_deferredInstall=e;
-  // Attendre 8 s pour ne pas afficher dès le premier chargement
-  setTimeout(()=>showInstallBanner('android'),8000);
+  setTimeout(()=>showInstallBanner('android'),1500);
+  // Sur mobile : le 1er toucher de l'écran ouvre directement la fenêtre d'installation
+  // (les navigateurs interdisent l'installation sans geste de l'utilisateur).
+  const mobile=/android|iphone|ipad|ipod/i.test(navigator.userAgent)||matchMedia('(pointer:coarse)').matches;
+  if(mobile && !isStandalone() && !installDismissedRecently()){
+    const once=ev=>{
+      if(ev.target.closest?.('#installBanner')) return; // le bandeau gère son propre bouton
+      document.removeEventListener('pointerup',once,true);
+      if(_deferredInstall) installApp();
+    };
+    document.addEventListener('pointerup',once,true);
+  }
 });
 window.addEventListener('appinstalled',()=>{
   _deferredInstall=null;
   document.getElementById('installBanner')?.remove();
   try{localStorage.removeItem(_INSTALL_KEY);}catch(e){}
-  showToast('📲 App installée !',2500);
+  showToast('App installée !',2500);
 });
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('sw.js').catch(()=>{});
     const ios=/iphone|ipad|ipod/i.test(navigator.userAgent)&&!isStandalone();
-    if(ios) setTimeout(()=>showInstallBanner('ios'),10000);
+    if(ios) setTimeout(()=>showInstallBanner('ios'),3000);
   });
 }
 restoreSession();
