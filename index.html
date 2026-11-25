@@ -1078,6 +1078,8 @@ body{transition:background .2s,color .2s}
           <button class="lb-tab active" id="lbtab-notes" onclick="switchLbTab('notes')"><svg width="14" height="14" style="color:inherit"><use href="#ico-grad"/></svg>Notes /20</button>
           <button class="lb-tab" id="lbtab-speed" onclick="switchLbTab('speed')"><svg width="14" height="14" style="color:inherit"><use href="#ico-bolt"/></svg>Vitesse</button>
           <button class="lb-tab" id="lbtab-global" onclick="switchLbTab('global')"><svg width="14" height="14" style="color:inherit"><use href="#ico-star"/></svg>Global</button>
+          <button class="lb-tab" id="lbtab-league" onclick="switchLbTab('league')">🏆 Ligue</button>
+          <button class="lb-tab" id="lbtab-friends" onclick="switchLbTab('friends')">👥 Amis</button>
           <button class="lb-tab" style="margin-left:auto" onclick="renderLeaderboard(true)" title="Rafraîchir le classement">↻ Rafraîchir</button>
         </div>
         <div id="lbContent"></div>
@@ -2080,12 +2082,98 @@ function switchLbTab(tab){
   renderLbContent();
 }
 
+/* ── AMIS ── */
+const escH=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function renderFriends(el){
+  if(!sb||!currentUser){ el.innerHTML='<p>Connecte-toi pour utiliser les amis.</p>'; return; }
+  el.innerHTML='<div class="spinner"></div>';
+  const [{data:mine},{data:rows,error}]=await Promise.all([
+    sb.from('profiles').select('friend_code').eq('id',currentUser.uid).single(),
+    sb.rpc('get_friends')
+  ]);
+  if(error){ el.innerHTML='<p>Fonction amis indisponible : exécute la dernière partie de supabase-schema.sql.</p>'; return; }
+  const list=rows||[];
+  const incoming=list.filter(r=>r.status==='pending'&&r.incoming);
+  const sent=list.filter(r=>r.status==='pending'&&!r.incoming);
+  const me={id:currentUser.uid,name:currentUser.displayName,isMe:true,xp:userData.xp||0,streak:userData.streak||0};
+  const friends=[me,...list.filter(r=>r.status==='accepted').map(r=>({id:r.id,name:r.display_name||'Ami',xp:r.xp||0,streak:r.streak||0,fid:r.friendship_id}))]
+    .sort((a,b)=>b.xp-a.xp);
+  let h=`<div class="lb-row" style="border-radius:12px;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+    <div style="flex:1"><div class="lb-name">Ton code ami : <strong style="letter-spacing:.15em">${escH(mine?.friend_code||'—')}</strong></div>
+    <div class="lb-sub">Partage-le à tes amis pour qu'ils t'ajoutent</div></div>
+    <button class="btn btn-ghost" onclick="navigator.clipboard?.writeText('${escH(mine?.friend_code||'')}');showToast('Code copié !')">Copier</button></div>
+    <div style="display:flex;gap:8px;margin-bottom:16px"><input class="form-input" id="friendCodeInput" placeholder="Code d'un ami" maxlength="6" style="text-transform:uppercase">
+    <button class="btn btn-orange" onclick="addFriend()">Ajouter</button></div>`;
+  if(incoming.length) h+='<h3 style="font-size:14px;margin:12px 0 8px">Demandes reçues</h3>'+incoming.map(r=>
+    `<div class="lb-row"><div style="flex:1" class="lb-name">${escH(r.display_name)}</div>
+    <button class="btn btn-orange" onclick="answerFriend('${r.friendship_id}',true)">Accepter</button>
+    <button class="btn btn-ghost" onclick="answerFriend('${r.friendship_id}',false)">Refuser</button></div>`).join('');
+  if(sent.length) h+='<p class="lb-sub" style="margin:8px 0">En attente : '+sent.map(r=>escH(r.display_name)).join(', ')+'</p>';
+  h+='<h3 style="font-size:14px;margin:12px 0 8px">Classement entre amis (XP)</h3><div class="lb-list">'+friends.map((p,i)=>
+    `<div class="lb-row ${p.isMe?'me':''}" style="cursor:pointer" onclick="showPlayerCard('${p.id}')"><div class="lb-rank">${i+1}</div>
+    <div class="lb-avatar">${escH(initialsFromName(p.name))}</div>
+    <div style="flex:1"><div class="lb-name">${p.isMe?'<strong>Moi ('+escH(p.name)+')</strong>':escH(p.name)}</div><div class="lb-sub">🔥 ${p.streak} jours</div></div>
+    <div class="lb-val">${p.xp} XP</div>
+    ${p.fid?`<button class="btn btn-ghost" title="Retirer" onclick="event.stopPropagation();answerFriend('${p.fid}',false)">✕</button>`:''}</div>`).join('')+'</div>';
+  if(friends.length===1) h+='<p class="lb-sub" style="margin-top:10px">Ajoute un ami avec son code pour voir votre classement.</p>';
+  el.innerHTML=h;
+}
+async function addFriend(){
+  const code=document.getElementById('friendCodeInput').value;
+  if(!code.trim()) return;
+  const {data,error}=await sb.rpc('send_friend_request',{code});
+  if(error){ showToast('Erreur : '+error.message); return; }
+  showToast(String(data).replace(/^ok:/,''));
+  renderFriends(document.getElementById('lbContent'));
+}
+async function answerFriend(id,accept){
+  await sb.rpc('respond_friend_request',{req_id:id,accept});
+  renderFriends(document.getElementById('lbContent'));
+}
+
+/* ── LIGUE + FICHE JOUEUR ── */
+const TIERS=['Bronze','Argent','Or','Platine','Diamant'];
+async function renderLeague(el){
+  if(!sb||!currentUser){ el.innerHTML='<p>Connecte-toi pour accéder à la ligue.</p>'; return; }
+  el.innerHTML='<div class="spinner"></div>';
+  const {data,error}=await sb.rpc('get_my_league');
+  if(error||!data?.length){ el.innerHTML='<p>Ligue indisponible : exécute la dernière partie de supabase-schema.sql.</p>'; return; }
+  const n=data.length;
+  el.innerHTML=`<p class="lb-sub" style="margin-bottom:10px">Ligue <strong>${TIERS[(data[0].league_tier||1)-1]}</strong> · ${n} joueur${n>1?'s':''}. En fin de semaine, les 5 premiers montent, les 5 derniers descendent.</p><div class="lb-list">`+
+  data.map(r=>`<div class="lb-row ${r.id===currentUser.uid?'me':''}" style="cursor:pointer" onclick="showPlayerCard('${r.id}')">
+    <div class="lb-rank ${r.rank<=3?['gold','silver','bronze'][r.rank-1]:''}">${r.rank}</div>
+    <div class="lb-avatar">${escH(initialsFromName(r.display_name))}</div>
+    <div style="flex:1"><div class="lb-name">${r.id===currentUser.uid?'<strong>Moi</strong>':escH(r.display_name||'Joueur')}</div>
+    <div class="lb-sub">${r.rank<=5?'⬆ zone de promotion':(n>=10&&r.rank>n-5?'⬇ zone de relégation':'')}</div></div>
+    <div class="lb-val">${r.week_xp||0} XP</div></div>`).join('')+'</div>';
+}
+async function showPlayerCard(pid){
+  const {data:c,error}=await sb.rpc('get_player_card',{pid});
+  if(error||!c){ showToast('Profil indisponible'); return; }
+  const qs=c.quizzes||[];
+  const avg=qs.length?(qs.reduce((t,q)=>t+(q.note||0),0)/qs.length).toFixed(1):'—';
+  const fmt=d=>d?new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'';
+  let m=document.getElementById('playerCardModal');
+  if(!m){ m=document.createElement('div'); m.id='playerCardModal';
+    m.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+    m.onclick=e=>{ if(e.target===m) m.remove(); }; document.body.appendChild(m); }
+  const isMe=pid===currentUser?.uid;
+  m.innerHTML=`<div style="background:var(--surface);border:2px solid var(--border);border-radius:20px;padding:22px;max-width:440px;width:100%;max-height:85vh;overflow:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center"><h3 style="font-size:18px;font-weight:900">${escH(c.name||'Joueur')}${isMe?' (moi)':''}</h3><button class="btn btn-ghost" onclick="this.closest('#playerCardModal').remove()">✕</button></div>
+    <p class="lb-sub" style="margin:6px 0 12px">Ligue ${TIERS[(c.tier||1)-1]} · ${c.xp} XP · 🔥 ${c.streak} jours · ${c.week_xp} XP cette semaine</p>
+    <p style="font-weight:800;margin-bottom:8px">Leçons récentes — moyenne ${avg}/20</p>
+    ${qs.length?qs.map(q=>`<div class="lb-row"><div style="flex:1"><div class="lb-name">${escH((q.key||'').split('|').pop())}</div><div class="lb-sub">${escH(q.disc||'')} · ${fmt(q.date)}</div></div><div class="lb-val">${q.note}/20</div></div>`).join(''):'<p class="lb-sub">Aucune leçon terminée.</p>'}</div>`;
+}
+
 function renderLeaderboard(force=false){
   renderLbContent(force);
 }
 
 async function renderLbContent(force=false){
   const lbEl=document.getElementById('lbContent');
+  if(currentLbTab==='friends'){ await renderFriends(lbEl); return; }
+  if(currentLbTab==='league'){ await renderLeague(lbEl); return; }
+  lbEl.dataset.loaded='';
   // Premier affichage : petit spinner pendant le temps du fetch réseau
   if(lbEl && !lbEl.dataset.loaded){
     lbEl.innerHTML='<div class="spinner"></div>';
