@@ -817,6 +817,7 @@ body{transition:background .2s,color .2s}
 [data-theme="dark"] .wrong-fb .feedback-answer{color:var(--fg)}
 .feedback-bar.show{align-items:center}
 @media(max-width:768px){.feedback-bar::before{top:14px}.feedback-left{min-height:34px}}
+.exo-row{display:flex;gap:8px;align-items:center;margin-bottom:10px}.exo-left{flex:1;font-weight:800;font-size:14px}.exo-unit{font-weight:900;color:var(--fg-muted)}.exo-in{font-size:16px}.exo-sel{flex:1;font-size:14px}
 </style>
 
 <!-- ═══ SVG SPRITE ═══ -->
@@ -1118,6 +1119,7 @@ body{transition:background .2s,color .2s}
 </div>
 
 <script src="curriculum.js"></script>
+<script src="curriculum-extra.js"></script>
 <script>
 /* ════════════════════════════════════════
    THEME
@@ -1908,20 +1910,22 @@ function startQuiz(ch){
 }
 
 function renderQ(){
+  { const q0=quizList[quizState.current]; if(q0.type==='tf'&&!q0.choices) q0.choices=['Vrai','Faux']; }
   const q=quizList[quizState.current],total=quizList.length,pct=quizState.current/total*100;
   document.getElementById('quizProgress').style.width=pct+'%';
   document.getElementById('quizProgressM').style.width=pct+'%';
   renderHearts('heartsRow'); renderHearts('heartsRowMobile');
   document.getElementById('quizBody').innerHTML=`
     <div class="quiz-question">${q.q}</div>
-    <div class="quiz-sub">${q.sub}</div>
-    <div class="quiz-choices">
+    <div class="quiz-sub">${q.sub||''}</div>
+    ${isExo(q)?renderExo(q):`<div class="quiz-choices">
       ${q.choices.map((c,i)=>`<button class="choice-btn" id="ch${i}" onclick="selectChoice(${i})"><div class="choice-letter">${'ABCD'[i]}</div>${c}</button>`).join('')}
-    </div>
+    </div>`}
     <div style="text-align:center;margin-top:12px">
       <button class="btn btn-orange" id="checkBtn" disabled onclick="checkAnswer()" style="min-width:150px">Vérifier</button>
     </div>`;
   quizState.answered=false; quizState.selected=null; hideAllFeedback();
+  if(q.type==='order') drawOrder();
 }
 
 function renderHearts(id){
@@ -1935,6 +1939,45 @@ function renderHearts(id){
   }
 }
 
+/* ── EXERCICES VARIÉS : num, fill, order, match, tf ── */
+const isExo=q=>['num','fill','order','match'].includes(q.type);
+const _norm=t=>String(t??'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function renderExo(q){
+  if(q.type==='num') return `<div class="exo-row"><input class="form-input exo-in" id="exoIn" inputmode="decimal" autocomplete="off" placeholder="Ta réponse" oninput="exoReady()">${q.unit?`<span class="exo-unit">${q.unit}</span>`:''}</div>`;
+  if(q.type==='fill') return `<div class="exo-row"><input class="form-input exo-in" id="exoIn" autocomplete="off" placeholder="Mot manquant (remplace ___)" oninput="exoReady()"></div>`;
+  if(q.type==='order'){ quizState.exoSeq=[]; quizState.exoPool=shuffle(q.items.map((_,i)=>i)); return '<div id="exoOrder"></div>'; }
+  quizState.exoRights=shuffle(q.pairs.map((_,i)=>i));
+  return q.pairs.map(p=>`<div class="exo-row"><div class="exo-left">${p[0]}</div><select class="form-input exo-sel" onchange="exoReady()"><option value="">Choisir…</option>${quizState.exoRights.map(j=>`<option value="${j}">${q.pairs[j][1]}</option>`).join('')}</select></div>`).join('');
+}
+function drawOrder(){
+  const q=quizList[quizState.current],seq=quizState.exoSeq,pool=quizState.exoPool.filter(i=>!seq.includes(i));
+  document.getElementById('exoOrder').innerHTML=
+    `<div class="quiz-choices">${seq.map((i,k)=>`<button class="choice-btn selected" onclick="exoOrderTap(${i},false)"><div class="choice-letter">${k+1}</div>${q.items[i]}</button>`).join('')||'<div class="quiz-sub">Touche les étapes dans le bon ordre.</div>'}</div>
+     <div class="quiz-choices">${pool.map(i=>`<button class="choice-btn" onclick="exoOrderTap(${i},true)">${q.items[i]}</button>`).join('')}</div>`;
+  quizState.selected=seq.length===q.items.length?true:null;
+  document.getElementById('checkBtn').disabled=quizState.selected===null;
+}
+function exoOrderTap(i,add){ if(quizState.answered) return; const s=quizState.exoSeq; if(add) s.push(i); else s.splice(s.indexOf(i),1); drawOrder(); }
+function exoReady(){
+  const q=quizList[quizState.current]; let ok;
+  if(q.type==='match') ok=[...document.querySelectorAll('.exo-sel')].every(e=>e.value!=='');
+  else ok=document.getElementById('exoIn').value.trim()!=='';
+  quizState.selected=ok?true:null; document.getElementById('checkBtn').disabled=!ok;
+}
+function evalExo(q){
+  if(q.type==='num'){ const v=parseFloat(document.getElementById('exoIn').value.replace(',','.')); return !isNaN(v)&&Math.abs(v-q.answer)<=Math.abs(q.answer)*((q.tol??1)/100)+1e-9; }
+  if(q.type==='fill'){ const v=_norm(document.getElementById('exoIn').value); return [].concat(q.answer).some(a=>_norm(a)===v); }
+  if(q.type==='order') return quizState.exoSeq.every((v,k)=>v===k);
+  return [...document.querySelectorAll('.exo-sel')].every((e,i)=>+e.value===i);
+}
+function answerText(q){
+  if(q.type==='num') return q.answer+' '+(q.unit||'');
+  if(q.type==='fill') return [].concat(q.answer)[0];
+  if(q.type==='order') return q.items.join(' → ');
+  return q.pairs.map(p=>p[0]+' = '+p[1]).join(' ; ');
+}
+
 function selectChoice(idx){
   if(quizState.answered) return;
   quizState.selected=idx;
@@ -1945,14 +1988,15 @@ function selectChoice(idx){
 function checkAnswer(){
   if(quizState.answered||quizState.selected===null) return;
   quizState.answered=true;
-  const q=quizList[quizState.current],correct=quizState.selected===q.answer;
-  document.querySelectorAll('.choice-btn').forEach((b,i)=>{
+  const q=quizList[quizState.current],exo=isExo(q),correct=exo?evalExo(q):quizState.selected===q.answer;
+  if(exo) document.querySelectorAll('.exo-in,.exo-sel').forEach(e=>{e.disabled=true;e.style.borderColor=correct?'var(--green)':'var(--red)'});
+  else document.querySelectorAll('.choice-btn').forEach((b,i)=>{
     if(i===q.answer) b.classList.add('correct');
     else if(i===quizState.selected&&!correct) b.classList.add('wrong');
   });
   if(correct) quizState.correct++;
   else {quizState.hearts=Math.max(0,quizState.hearts-1); quizState.wrongCount=(quizState.wrongCount||0)+1;}
-  showFeedback(correct,q.expl);
+  showFeedback(correct,(exo&&!correct)?`Réponse : <strong>${answerText(q)}</strong>. ${q.expl||''}`:(q.expl||''));
 }
 
 function showFeedback(correct,expl){
