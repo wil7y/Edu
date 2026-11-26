@@ -1,6 +1,7 @@
 -- ════════════════════════════════════════════════════════
 -- TechnoEdu — schéma Supabase
 -- À coller dans : Dashboard Supabase → SQL Editor → New query → Run
+-- (ce fichier est idempotent : le recoller ne casse rien)
 -- ════════════════════════════════════════════════════════
 
 -- Table de progression, une ligne par utilisateur (id = auth.users.id)
@@ -235,8 +236,16 @@ begin
   update public.profiles set week_xp = 0;
 end $$;
 revoke all on function public.rollover_leagues() from public, authenticated;
--- Planification (Database → Extensions → activer "pg_cron", puis lancer) :
--- select cron.schedule('rollover-leagues', '0 0 * * 1', 'select public.rollover_leagues()');
+
+-- Activation + planification automatiques (idempotent : se relance sans erreur
+-- même si tu recolles tout le fichier une seconde fois)
+create extension if not exists pg_cron;
+do $$
+begin
+  if not exists (select 1 from cron.job where jobname = 'rollover-leagues') then
+    perform cron.schedule('rollover-leagues', '0 0 * * 1', 'select public.rollover_leagues()');
+  end if;
+end $$;
 
 create or replace function public.get_player_card(pid uuid)
 returns jsonb language sql stable security definer set search_path = public as $$

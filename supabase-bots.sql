@@ -94,6 +94,8 @@ grant execute on function public.get_my_league(), public.get_player_card(uuid) t
 --    historique de quiz factice pour que les classements par note/
 --    vitesse ne les trahissent pas (profil "vide" = suspect).
 -- ════════════════════════════════════════════════════════
+-- Protection : si des bots existent déjà, on ne regénère pas les 150
+-- profils une seconde fois (évite les doublons si tu recolles ce fichier).
 do $$
 declare
   first_names text[] := array['Lucas','Emma','Hugo','Chloé','Nathan','Léa','Louis','Manon','Jules','Camille',
@@ -114,6 +116,10 @@ declare
   qh jsonb; nq int; d jsonb;
   new_id uuid;
 begin
+  if exists (select 1 from public.profiles where is_bot limit 1) then
+    raise notice 'Des bots existent déjà — génération ignorée (pas de doublons).';
+    return;
+  end if;
   for tier in 1..5 loop
     base_xp := case tier when 1 then 50 when 2 then 300 when 3 then 700 when 4 then 1300 else 2200 end;
     xp_spread := case tier when 1 then 250 when 2 then 400 when 3 then 600 when 4 then 900 else 1800 end;
@@ -200,6 +206,12 @@ begin
 end $$;
 revoke all on function public.simulate_bot_activity() from public, authenticated;
 
--- Planification (une fois "pg_cron" activé dans Database → Extensions,
--- comme pour rollover_leagues) : toutes les 4 heures
--- select cron.schedule('simulate-bot-activity', '0 */4 * * *', 'select public.simulate_bot_activity()');
+-- Activation + planification automatiques (toutes les 4h, idempotent :
+-- se relance sans erreur même si tu recolles tout le fichier une seconde fois)
+create extension if not exists pg_cron;
+do $$
+begin
+  if not exists (select 1 from cron.job where jobname = 'simulate-bot-activity') then
+    perform cron.schedule('simulate-bot-activity', '0 */4 * * *', 'select public.simulate_bot_activity()');
+  end if;
+end $$;
