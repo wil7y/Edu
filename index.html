@@ -357,6 +357,13 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .hearts-row{display:flex;gap:3px}
 .quiz-question{font-size:21px;font-weight:900;margin-bottom:7px;line-height:1.25}
 .quiz-sub{font-size:14px;font-weight:600;color:var(--fg-muted);margin-bottom:22px;line-height:1.5}
+.q-feedback{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:-12px 0 22px}
+.q-feedback-label{font-size:11px;font-weight:800;color:var(--fg-muted);text-transform:uppercase;letter-spacing:.3px;margin-right:2px}
+.q-fb-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 13px;border-radius:999px;border:2px solid var(--border);background:var(--surface);color:var(--fg-muted);font-family:var(--font);font-size:12px;font-weight:800;cursor:pointer;transition:border-color .15s,background .15s,color .15s}
+.q-fb-btn svg{flex-shrink:0}
+.q-fb-btn:hover{border-color:var(--fg-muted)}
+.q-fb-btn.up.active{background:var(--green-soft);border-color:var(--green);color:var(--green-dark)}
+.q-fb-btn.down.active{background:var(--red-soft);border-color:var(--red);color:var(--red)}
 .quiz-choices{display:flex;flex-direction:column;gap:9px;margin-bottom:24px}
 .choice-btn{width:100%;padding:14px 18px;background:var(--surface);border:2px solid var(--border);border-radius:13px;text-align:left;font-family:var(--font);font-size:14px;font-weight:700;color:var(--fg);cursor:pointer;transition:border-color .15s,background .15s;display:flex;align-items:center;gap:13px;box-shadow:0 3px 0 var(--border);min-height:52px;line-height:1.3}
 .choice-btn:hover{border-color:var(--accent);background:var(--accent-soft)}
@@ -838,6 +845,8 @@ body{transition:background .2s,color .2s}
   <symbol id="ico-arrow-down" viewBox="0 0 24 24"><path fill="currentColor" d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/></symbol>
   <symbol id="ico-x" viewBox="0 0 24 24"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></symbol>
   <symbol id="ico-heart" viewBox="0 0 24 24"><path fill="currentColor" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></symbol>
+  <symbol id="ico-thumb-up" viewBox="0 0 24 24"><path fill="currentColor" d="M2 21h3V9H2v12zm19.83-10.59c.11-.25.17-.53.17-.82V8a2 2 0 0 0-2-2h-5.5l.83-4.02.03-.28a1.5 1.5 0 0 0-.44-1.06L13.17 0 6.59 6.59A1.993 1.993 0 0 0 6 8v11c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.59z"/></symbol>
+  <symbol id="ico-thumb-down" viewBox="0 0 24 24"><path fill="currentColor" d="M22 3h-3v12h3V3zM2.17 13.59c-.11.25-.17.53-.17.82V16a2 2 0 0 0 2 2h5.5l-.83 4.02-.03.28c0 .4.16.76.44 1.06L10.83 24l6.58-6.59c.37-.36.59-.86.59-1.41V5c0-1.1-.9-2-2-2H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v1.59z"/></symbol>
   <symbol id="ico-flame" viewBox="0 0 24 24"><path fill="currentColor" d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67zM11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z"/></symbol>
   <symbol id="ico-moon" viewBox="0 0 24 24"><path fill="currentColor" d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></symbol>
   <symbol id="ico-sun" viewBox="0 0 24 24"><path fill="currentColor" d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.79 1.42-1.41zM4 10.5H1v2h3v-2zm9-9.95h-2V3.5h2V.55zm7.45 3.91l-1.41-1.41-1.79 1.79 1.41 1.41 1.79-1.79zm-3.21 13.7l1.79 1.8 1.41-1.41-1.8-1.79-1.4 1.4zM20 10.5v2h3v-2h-3zm-8-5c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm-1 16.95h2V19.5h-2v2.95zm-7.45-3.91l1.41 1.41 1.79-1.8-1.41-1.41-1.79 1.8z"/></symbol>
@@ -1937,6 +1946,7 @@ function startQuiz(ch){
   document.getElementById('backTopbarTitle').textContent='Quiz';
   showView('quiz');
   renderQ();
+  preloadQuestionVotes();
 }
 
 function renderQ(){
@@ -1948,6 +1958,15 @@ function renderQ(){
   document.getElementById('quizBody').innerHTML=`
     <div class="quiz-question">${q.q}</div>
     <div class="quiz-sub">${q.sub||''}</div>
+    <div class="q-feedback">
+      <span class="q-feedback-label">Avis sur la question</span>
+      <button class="q-fb-btn up" id="qfbUp" onclick="voteQuestion(1)" title="J'aime cette question">
+        <svg width="15" height="15"><use href="#ico-thumb-up"/></svg>J'aime
+      </button>
+      <button class="q-fb-btn down" id="qfbDown" onclick="voteQuestion(-1)" title="Je n'aime pas cette question">
+        <svg width="15" height="15"><use href="#ico-thumb-down"/></svg>Je n'aime pas
+      </button>
+    </div>
     ${isExo(q)?renderExo(q):`<div class="quiz-choices">
       ${q.choices.map((c,i)=>`<button class="choice-btn" id="ch${i}" onclick="selectChoice(${i})"><div class="choice-letter">${'ABCD'[i]}</div>${c}</button>`).join('')}
     </div>`}
@@ -1955,7 +1974,52 @@ function renderQ(){
       <button class="btn btn-orange" id="checkBtn" disabled onclick="checkAnswer()" style="min-width:150px">Vérifier</button>
     </div>`;
   quizState.answered=false; quizState.selected=null; hideAllFeedback();
+  refreshQuestionFeedbackUI();
   if(q.type==='order') drawOrder();
+}
+
+/* ─── Avis like/dislike par question (Supabase) ─── */
+let questionVotes={}; // cache local {questionKey: 1|-1} des avis de l'utilisateur courant
+function questionKey(idx){
+  if(!currentChapter) return null;
+  return `${currentChapter.disc}|${currentChapter.mod.id}|${currentChapter.ch.id}|${idx}`;
+}
+async function preloadQuestionVotes(){
+  if(!sb||!currentUser||!quizList.length) return;
+  const keys=quizList.map((_,i)=>questionKey(i)).filter(Boolean);
+  try{
+    const {data,error}=await sb.from('question_feedback').select('question_key,vote')
+      .eq('user_id',currentUser.uid).in('question_key',keys);
+    if(error||!data) return;
+    data.forEach(r=>{questionVotes[r.question_key]=r.vote});
+    refreshQuestionFeedbackUI();
+  }catch(e){}
+}
+function refreshQuestionFeedbackUI(){
+  const up=document.getElementById('qfbUp'),down=document.getElementById('qfbDown');
+  if(!up||!down) return;
+  const v=questionVotes[questionKey(quizState.current)];
+  up.classList.toggle('active',v===1);
+  down.classList.toggle('active',v===-1);
+}
+async function voteQuestion(v){
+  const key=questionKey(quizState.current);
+  if(!key) return;
+  const next=questionVotes[key]===v?0:v; // retaper le même bouton annule l'avis
+  if(next===0) delete questionVotes[key]; else questionVotes[key]=next;
+  refreshQuestionFeedbackUI();
+  if(!sb||!currentUser){ showToast('Merci pour ton avis !',1800); return; }
+  try{
+    if(next===0){
+      await sb.from('question_feedback').delete().eq('question_key',key).eq('user_id',currentUser.uid);
+    }else{
+      await sb.from('question_feedback').upsert(
+        {question_key:key,user_id:currentUser.uid,vote:next,updated_at:new Date().toISOString()},
+        {onConflict:'question_key,user_id'}
+      );
+    }
+    showToast('Merci pour ton avis !',1800);
+  }catch(e){ showToast("Avis non enregistré (connexion ?)",2400); }
 }
 
 function renderHearts(id){
