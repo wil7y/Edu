@@ -439,7 +439,8 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .lb-rank.gold{color:#FFD700}
 .lb-rank.silver{color:#C0C0C0}
 .lb-rank.bronze{color:#CD7F32}
-.lb-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;color:#fff;flex-shrink:0}
+.lb-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;color:#fff;flex-shrink:0;position:relative}
+.bot-badge{position:absolute;bottom:-3px;right:-3px;width:16px;height:16px;border-radius:50%;background:var(--fg-muted);color:#fff;font-size:9px;font-weight:900;display:flex;align-items:center;justify-content:center;border:2px solid var(--surface);line-height:1}
 .lb-name{flex:1;font-weight:800;font-size:14px}
 .lb-val{font-weight:900;font-size:15px;color:var(--accent);font-variant-numeric:tabular-nums}
 .lb-sub{font-size:11px;color:var(--fg-muted);font-weight:700;margin-top:1px}
@@ -1151,7 +1152,7 @@ function toggleTheme(){applyTheme(!isDark);showToast(isDark?'Mode sombre':'Mode 
 //    tant que la Row Level Security est activée sur tes tables — voir supabase-schema.sql)
 const SUPABASE_URL = 'https://xodhseyknckosimlsnwc.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_VAioLZY8kwAHNxxywjeGXg_FmGxnpmJ';
-const sb = (SUPABASE_URL.includes('TON-PROJET')) ? null
+const sb = (SUPABASE_URL.includes('TON-PROJET') || typeof supabase === 'undefined') ? null
   : supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* ════════════════════════════════════════
@@ -1344,6 +1345,7 @@ async function buildLeaderboard(type,force=false){
       avgNote:Number(r.avg_note)||0,
       avgSpeed:(r.avg_speed==null)?999:Number(r.avg_speed),
       xp:r.xp||0, weekXp:r.week_xp||0, quizCount:r.quiz_count||0,
+      isBot:!!r.is_bot,
     }));
     // Si ma propre ligne n'est pas encore dans la vue (requête juste après inscription,
     // avant la première sync Supabase), on l'ajoute à partir des stats locales.
@@ -1789,6 +1791,21 @@ function renderDiscModules(){
     </div>
   </div>`;
 
+  // Liste à plat de tous les chapitres de la discipline, dans l'ordre.
+  // Sert à déverrouiller en ignorant les chapitres sans leçon (sinon un
+  // chapitre vide bloque définitivement tout ce qui vient après lui).
+  const flatChapters=[];
+  disc.modules.forEach(m=>m.chapters.forEach(c=>flatChapters.push({mod:m,ch:c})));
+  function isChapterUnlocked(modId,chId){
+    const idx=flatChapters.findIndex(f=>f.mod.id===modId&&f.ch.id===chId);
+    for(let i=idx-1;i>=0;i--){
+      const prev=flatChapters[i];
+      if(!prev.ch.lesson) continue; // chapitre vide : on l'ignore, il ne gate rien
+      return (userData.completedChapters||[]).includes(`${currentDisc}|${prev.mod.id}|${prev.ch.id}`);
+    }
+    return true; // aucun chapitre avec leçon avant lui : déverrouillé par défaut
+  }
+
   const modules=disc.modules.map((mod,mi)=>{
     const modDone=mod.chapters.filter(ch=>(userData.completedChapters||[]).includes(`${currentDisc}|${mod.id}|${ch.id}`)).length;
     return `<div class="module-card" style="margin-bottom:14px">
@@ -1800,10 +1817,7 @@ function renderDiscModules(){
       <div class="module-chapters">
         ${mod.chapters.map((ch,ci)=>{
           const hasLesson=!!ch.lesson;
-          let isUnlocked=false;
-          if(mi===0&&ci===0){isUnlocked=true}
-          else if(ci===0){const pm=disc.modules[mi-1];const lc=pm.chapters[pm.chapters.length-1];isUnlocked=(userData.completedChapters||[]).includes(`${currentDisc}|${pm.id}|${lc.id}`)}
-          else{const pc=mod.chapters[ci-1];isUnlocked=(userData.completedChapters||[]).includes(`${currentDisc}|${mod.id}|${pc.id}`)}
+          const isUnlocked=isChapterUnlocked(mod.id,ch.id);
           const avail=isUnlocked&&hasLesson;
           const isDone=(userData.completedChapters||[]).includes(`${currentDisc}|${mod.id}|${ch.id}`);
           const history=(userData.quizHistory||[]).filter(h=>h.key===`${currentDisc}|${mod.id}|${ch.id}`);
@@ -1857,6 +1871,22 @@ function openChapter(discId,modId,chapId){
 
 function renderLesson(disc,mod,ch){
   const L=ch.lesson;
+  if(!L){
+    document.getElementById('lessonBody').innerHTML=`<div class="lesson-hero">
+      <svg width="52" height="52" style="flex-shrink:0"><use href="${disc.icon}"/></svg>
+      <div class="lesson-hero-info">
+        <div class="lesson-hero-disc">${disc.name} · ${mod.title}</div>
+        <div class="lesson-hero-title">${ch.title}</div>
+      </div>
+    </div>
+    <div class="lesson-section" style="text-align:center;padding:40px 16px">
+      <h2>Contenu en cours de rédaction</h2>
+      <p>Ce chapitre arrive bientôt — reviens un peu plus tard !</p>
+    </div>`;
+    const btn=document.getElementById('startQuizBtn');
+    btn.style.display='none';
+    return;
+  }
   let html=`<div class="lesson-hero">
     <svg width="52" height="52" style="flex-shrink:0"><use href="${disc.icon}"/></svg>
     <div class="lesson-hero-info">
@@ -2198,7 +2228,7 @@ async function renderLeague(el){
   el.innerHTML=`<p class="lb-sub" style="margin-bottom:10px">Ligue <strong>${TIERS[(data[0].league_tier||1)-1]}</strong> · ${n} joueur${n>1?'s':''}. En fin de semaine, les 5 premiers montent, les 5 derniers descendent.</p><div class="lb-list">`+
   data.map(r=>`<div class="lb-row ${r.id===currentUser.uid?'me':''}" style="cursor:pointer" onclick="showPlayerCard('${r.id}')">
     <div class="lb-rank ${r.rank<=3?['gold','silver','bronze'][r.rank-1]:''}">${r.rank}</div>
-    <div class="lb-avatar">${escH(initialsFromName(r.display_name))}</div>
+    <div class="lb-avatar">${escH(initialsFromName(r.display_name))}${r.is_bot?'<span class="bot-badge" title="Compte bot">B</span>':''}</div>
     <div style="flex:1"><div class="lb-name">${r.id===currentUser.uid?'<strong>Moi</strong>':escH(r.display_name||'Joueur')}</div>
     <div class="lb-sub">${r.rank<=5?'<svg width="12" height="12" style="color:inherit;vertical-align:-2px"><use href="#ico-arrow-up"/></svg> zone de promotion':(n>=10&&r.rank>n-5?'<svg width="12" height="12" style="color:inherit;vertical-align:-2px"><use href="#ico-arrow-down"/></svg> zone de relégation':'')}</div></div>
     <div class="lb-val">${r.week_xp||0} XP</div></div>`).join('')+'</div>';
@@ -2215,7 +2245,7 @@ async function showPlayerCard(pid){
     m.onclick=e=>{ if(e.target===m) m.remove(); }; document.body.appendChild(m); }
   const isMe=pid===currentUser?.uid;
   m.innerHTML=`<div style="background:var(--surface);border:2px solid var(--border);border-radius:20px;padding:22px;max-width:440px;width:100%;max-height:85vh;overflow:auto">
-    <div style="display:flex;justify-content:space-between;align-items:center"><h3 style="font-size:18px;font-weight:900">${escH(c.name||'Joueur')}${isMe?' (moi)':''}</h3><button class="btn btn-ghost" onclick="this.closest('#playerCardModal').remove()"><svg width="14" height="14" style="color:inherit;vertical-align:-2px"><use href="#ico-x"/></svg></button></div>
+    <div style="display:flex;justify-content:space-between;align-items:center"><h3 style="font-size:18px;font-weight:900">${escH(c.name||'Joueur')}${isMe?' (moi)':''}${c.is_bot?' <span class="bot-badge" style="position:static;display:inline-flex;width:18px;height:18px;font-size:10px;border:none;vertical-align:middle" title="Compte bot">B</span>':''}</h3><button class="btn btn-ghost" onclick="this.closest('#playerCardModal').remove()"><svg width="14" height="14" style="color:inherit;vertical-align:-2px"><use href="#ico-x"/></svg></button></div>
     <p class="lb-sub" style="margin:6px 0 12px">Ligue ${TIERS[(c.tier||1)-1]} · ${c.xp} XP · <svg width="14" height="14" style="color:inherit;vertical-align:-2px"><use href="#ico-flame"/></svg> ${c.streak} jours · ${c.week_xp} XP cette semaine</p>
     <p style="font-weight:800;margin-bottom:8px">Leçons récentes — moyenne ${avg}/20</p>
     ${qs.length?qs.map(q=>`<div class="lb-row"><div style="flex:1"><div class="lb-name">${escH((q.key||'').split('|').pop())}</div><div class="lb-sub">${escH(q.disc||'')} · ${fmt(q.date)}</div></div><div class="lb-val">${q.note}/20</div></div>`).join(''):'<p class="lb-sub">Aucune leçon terminée.</p>'}</div>`;
@@ -2263,7 +2293,7 @@ async function renderLbContent(force=false){
     const val=currentLbTab==='speed'?(p.val===999?'—':p.val?.toFixed(1)+'s'):p.val?.toFixed(1)||'—';
     html+=`<div class="lb-row ${p.isMe?'me':''}">
       <div class="lb-rank ${rankClass}">${rankEmoji}</div>
-      <div class="lb-avatar" style="${p.isMe?'background:linear-gradient(135deg,var(--accent),var(--purple))':''}">${p.avatar}</div>
+      <div class="lb-avatar" style="${p.isMe?'background:linear-gradient(135deg,var(--accent),var(--purple))':''}">${p.avatar}${p.isBot?'<span class="bot-badge" title="Compte bot">B</span>':''}</div>
       <div style="flex:1"><div class="lb-name">${p.isMe?'<strong>Moi ('+p.name+')</strong>':p.name}</div><div class="lb-sub">${p.sub||''}</div></div>
       <div class="lb-val">${val}</div>
     </div>`;
@@ -2793,7 +2823,7 @@ async function requestNotifPermission() {
   if (!notifSupported()) { showToast('Notifications non supportées'); return; }
   const perm = await Notification.requestPermission();
   if (perm === 'granted') {
-    scheduleLocalNotif();
+    startRecurringNotif();
     showToast('Notifications activées !', 2500);
     // Hide the banner
     document.getElementById('notifPermBanner')?.remove();
@@ -2804,29 +2834,42 @@ async function requestNotifPermission() {
   }
   renderNotifBanner();
 }
-function scheduleLocalNotif() {
-  // Fire a notification after a short delay as confirmation
+/* ── Rappel récurrent (toutes les 3 min) ──
+   IMPORTANT (limite technique) : ceci ne marche que tant que l'app/l'onglet
+   reste ouvert (même en arrière-plan). Un navigateur ou une appli totalement
+   fermée, ou un téléphone verrouillé pendant longtemps, ne peut PAS être
+   réveillé toutes les 3 min par une simple page web : il faudrait un vrai
+   serveur de Web Push (VAPID) qui envoie une notification push toutes les
+   3 min, ce qu'aucun navigateur/OS n'autorise à ce rythme (ça serait traité
+   comme du spam et bloqué). Cette fonction est donc le meilleur compromis
+   "sans serveur" : un rappel fiable tant que TechnoEdu tourne. */
+let _notifIntervalId = null;
+const NOTIF_INTERVAL_MS = 3 * 60 * 1000; // 3 minutes
+function fireReminderNotif() {
+  if (Notification.permission !== 'granted') { stopRecurringNotif(); return; }
+  const opts = {
+    body: 'C\'est l\'heure de réviser ! Maintiens ton streak aujourd\'hui.',
+    icon: 'icon-192.png',
+    badge: 'icon-192.png',
+    tag: 'technoedu-reminder',
+    renotify: true,
+    requireInteraction: false,
+  };
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready.then(reg => reg.showNotification('TechnoEdu', opts))
+      .catch(() => { try { new Notification('TechnoEdu', opts); } catch(e) {} });
+  } else {
+    try { new Notification('TechnoEdu', opts); } catch(e) {}
+  }
+}
+function startRecurringNotif() {
   if (Notification.permission !== 'granted') return;
-  // Schedule for next day at 18:00 — simulated with setTimeout for demonstration
-  const now = new Date();
-  const target = new Date();
-  target.setHours(18, 0, 0, 0);
-  if (target <= now) target.setDate(target.getDate() + 1);
-  const delay = target - now;
-  // We only do it if page stays open (best-effort)
-  setTimeout(() => {
-    try {
-      new Notification('TechnoEdu', {
-        body: 'C\'est l\'heure de réviser ! Maintiens ton streak aujourd\'hui.',
-        icon: 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#FF6B00"/><path d="M36 8L16 36h14l-4 20 22-30H34z" fill="#fff"/></svg>`),
-        badge: 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#FF6B00"/></svg>`),
-        tag: 'technoedu-daily',
-        requireInteraction: false,
-      });
-    } catch(e) {}
-    // Re-schedule for next day
-    setTimeout(scheduleLocalNotif, 60000);
-  }, Math.min(delay, 2147483647));
+  if (_notifIntervalId) return; // déjà lancé, évite les doublons
+  fireReminderNotif(); // une notif immédiate pour confirmer l'activation
+  _notifIntervalId = setInterval(fireReminderNotif, NOTIF_INTERVAL_MS);
+}
+function stopRecurringNotif() {
+  if (_notifIntervalId) { clearInterval(_notifIntervalId); _notifIntervalId = null; }
 }
 function renderNotifBanner() {
   const bannerId = 'notifPermBanner';
@@ -2850,12 +2893,16 @@ function renderNotifBanner() {
   streakNotif.insertAdjacentElement('afterend', banner);
 }
 
-// Auto-schedule if already granted
+// Relance le rappel récurrent si la permission a déjà été accordée
 (function(){
   try {
-    if (Notification.permission === 'granted') scheduleLocalNotif();
+    if (Notification.permission === 'granted') startRecurringNotif();
   } catch(e) {}
 })();
+// Si l'onglet redevient visible, on s'assure que le cycle tourne toujours
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) { try { if (Notification.permission === 'granted') startRecurringNotif(); } catch(e) {} }
+});
 
 /* ════════════════════════════════════════
    PWA : service worker + installation
